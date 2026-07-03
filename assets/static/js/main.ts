@@ -66,18 +66,19 @@ const renderTicks = (): void => {
   ticks.innerHTML = marks.join('')
 }
 
-// Restart the CSS entrance + rail-fill animations for the new slide by removing
-// and re-adding `is-in` on the next frame (a reflow-free retrigger).
+// Restart the CSS entrance + rail-fill animations for the new slide. Removing
+// then re-adding `is-in` only restarts an animation if the browser actually sees
+// the removed state, so force a synchronous reflow in between. (A rAF toggle gets
+// coalesced into one style recalc — the animation never restarts and the rail
+// stays stuck full from the second slide onward.)
 const retriggerMotion = (): void => {
   if (prefersReducedMotion()) return
-  const spotlight = el('spotlight')
-  const rail = el('rail')
-  spotlight?.classList.remove('is-in')
-  rail?.classList.remove('is-in')
-  requestAnimationFrame(() => {
-    spotlight?.classList.add('is-in')
-    rail?.classList.add('is-in')
-  })
+  for (const node of [el('spotlight'), el('rail')]) {
+    if (!node) continue
+    node.classList.remove('is-in')
+    void node.getBoundingClientRect()
+    node.classList.add('is-in')
+  }
 }
 
 const render = (i: number): void => {
@@ -155,6 +156,9 @@ const fetchData = async (): Promise<void> => {
 }
 
 const init = (): void => {
+  // Drive the rail-fill duration from the rotation interval so the two stay in
+  // sync if ROTATE_MS changes (the CSS only has a static fallback).
+  el('rail')?.style.setProperty('--rotate-ms', `${ROTATE_MS}ms`)
   // Seed immediately from the bundled copy so rotation + QR start without waiting
   // on the network; the fetch then refreshes with the latest baked file.
   apply(fallbackData)
