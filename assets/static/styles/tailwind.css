@@ -1,0 +1,425 @@
+/* =========================================================================
+   Featured on Product Hunt — "The Launch"
+   A full-screen signage spotlight that rotates through the products currently
+   featured on Product Hunt, one at a time. The feed carries no votes or ranking
+   (see CLAUDE.md), so this is deliberately NOT a leaderboard: no rank numbers,
+   no counts. Each product arrives on its own "launch card" — a generated
+   monogram tile (the feed ships no logos) that rises into place in Product Hunt
+   orange — with a QR to open it. Tuned for unattended screens: legible at
+   distance, both orientations, no interaction required.
+   ========================================================================= */
+
+@import 'tailwindcss';
+
+@theme {
+  --color-ground: #17120f;
+  --color-ground-2: #221913;
+  --color-orange: #da552f;
+  --color-orange-bright: #ff6a3d;
+  --color-ink: #f6eee7;
+  --color-ink-dim: #b49e90;
+  --color-line: #35291f;
+  --font-display: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Space Mono', ui-monospace, 'SFMono-Regular', monospace;
+}
+
+/* Webfonts: self-hosted, vendored from Bun-managed @fontsource (sync-fonts.js).
+   Bricolage/Hanken are variable "standard"/"wght" axes; Space Mono is static. */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url('/static/fonts/bricolage-grotesque-latin-standard-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Hanken Grotesk';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/static/fonts/hanken-grotesk-latin-wght-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Space Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/static/fonts/space-mono-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Space Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/static/fonts/space-mono-latin-700-normal.woff2') format('woff2');
+}
+
+@layer base {
+  /* One fluid root drives the whole scale; vw+vh keeps it orientation-neutral so
+     portrait and landscape resolve to a similar type size. Children size in rem,
+     so the layout scales from 800×480 → 4K with no breakpoints. */
+  :root {
+    font-size: clamp(15px, 0.86vw + 0.86vh, 44px);
+  }
+
+  body {
+    min-height: 100svh;
+    background-color: var(--color-ground);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  a {
+    color: inherit;
+  }
+}
+
+@layer components {
+  .stage {
+    position: relative;
+    display: grid;
+    /* masthead · progress · spotlight (flexes + centres) · colophon. The status
+       overlay sits outside the flow (position: absolute) so it never steals the
+       flexible row. */
+    grid-template-rows: auto auto 1fr auto;
+    gap: clamp(0.8rem, 2.4vmin, 2rem);
+    min-height: 100svh;
+    padding: clamp(1.3rem, 4.2vmin, 3.4rem);
+    overflow: hidden;
+    /* A warm launch-morning glow rising in Product Hunt orange, so the near-black
+       ground reads as lit rather than a flat fill. */
+    background-image: radial-gradient(
+      120% 90% at 82% -10%,
+      rgba(218, 85, 47, 0.22),
+      rgba(218, 85, 47, 0) 55%
+    );
+  }
+
+  /* ---- Masthead ---------------------------------------------------------- */
+  .masthead {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .kicker {
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6em;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 0.82rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--color-ink);
+  }
+
+  /* The upvote triangle is Product Hunt's signature mark — used here as brand
+     iconography and never beside a number, since we have no counts to show. */
+  .kicker__mark {
+    color: var(--color-orange);
+    font-size: 0.9em;
+    transform: translateY(-0.05em);
+  }
+
+  .today {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-ink-dim);
+  }
+
+  /* ---- Rotation position (ticks) + time-to-next (rail) ------------------- */
+  /* Both encode the slideshow, not a ranking: which of today's launches is on
+     screen, and how long until the next one. */
+  .progress {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .ticks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .tick {
+    width: 0.66rem;
+    height: 0.66rem;
+    /* An upvote triangle, echoing the kicker mark. */
+    clip-path: polygon(50% 0, 100% 100%, 0 100%);
+    background-color: var(--color-line);
+    transition: background-color 300ms ease;
+  }
+  .tick[data-seen='true'] {
+    background-color: var(--color-orange-bright);
+    opacity: 0.4;
+  }
+  .tick[data-active='true'] {
+    background-color: var(--color-orange-bright);
+    opacity: 1;
+  }
+
+  .rail {
+    height: 2px;
+    background-color: var(--color-line);
+    overflow: hidden;
+  }
+  .rail__fill {
+    display: block;
+    height: 100%;
+    width: 100%;
+    transform-origin: left center;
+    transform: scaleX(0);
+    background-color: var(--color-orange);
+  }
+
+  /* ---- Spotlight --------------------------------------------------------- */
+  .spotlight {
+    align-self: center;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: clamp(1.4rem, 4vmin, 3.6rem);
+    width: 100%;
+    max-width: 68rem;
+    margin: 0 auto;
+  }
+
+  /* The launch card: a generated monogram standing in for the missing logo.
+     Its colour is keyed off the product name, so the board shifts hue as it
+     rotates. This is the page's signature element. */
+  .logo {
+    display: grid;
+    place-items: center;
+    width: clamp(6rem, 20vmin, 11rem);
+    aspect-ratio: 1;
+    border-radius: clamp(1rem, 3vmin, 1.8rem);
+    background-color: var(--tile, var(--color-orange));
+    color: #fff;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(3rem, 11vmin, 6rem);
+    line-height: 1;
+    box-shadow:
+      0 1.4rem 3rem rgba(0, 0, 0, 0.45),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+  }
+
+  .detail {
+    min-width: 0;
+  }
+
+  .name {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(2.2rem, 7vmin, 4.6rem);
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  .tagline {
+    margin: 0.7rem 0 0;
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-size: clamp(1rem, 2.5vmin, 1.7rem);
+    line-height: 1.32;
+    color: var(--color-ink);
+    opacity: 0.9;
+    text-wrap: pretty;
+  }
+
+  .maker {
+    margin: 1.2rem 0 0;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    letter-spacing: 0.08em;
+    color: var(--color-ink-dim);
+  }
+  .maker:empty {
+    display: none;
+  }
+
+  /* QR to open the product on Product Hunt. Dark modules sit on a light chip so
+     phone cameras get the contrast they want against the dark stage. */
+  .scan {
+    margin: 0;
+    display: grid;
+    justify-items: center;
+    gap: 0.55rem;
+  }
+  .scan__qr {
+    width: clamp(4.4rem, 13vmin, 7rem);
+    aspect-ratio: 1;
+    padding: 0.5rem;
+    border-radius: 0.7rem;
+    background-color: #fff;
+  }
+  .scan__qr svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .scan__cap {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-ink-dim);
+  }
+  .scan[hidden] {
+    display: none;
+  }
+
+  /* ---- Colophon ---------------------------------------------------------- */
+  .colophon {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-top: clamp(0.6rem, 1.6vmin, 1.2rem);
+    border-top: 1px solid var(--color-line);
+  }
+
+  .colophon__credit {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    color: var(--color-ink-dim);
+  }
+  .colophon__credit a {
+    color: var(--color-orange-bright);
+    text-decoration: none;
+  }
+
+  .brand {
+    display: block;
+    flex: none;
+    opacity: 0.6;
+    transition: opacity 200ms ease;
+    border-radius: 4px;
+    outline-offset: 6px;
+  }
+  .brand:hover,
+  .brand:focus-visible {
+    opacity: 0.95;
+  }
+  .brand img {
+    display: block;
+    width: auto;
+    height: clamp(12px, 1.15rem, 24px);
+  }
+
+  /* ---- Orientation & small screens -------------------------------------- */
+  /* Portrait (and narrow landscape): stack the card over the detail and drop the
+     QR beneath, so nothing crowds. */
+  @media (orientation: portrait), (max-aspect-ratio: 5 / 4) {
+    .spotlight {
+      grid-template-columns: 1fr;
+      justify-items: center;
+      text-align: center;
+      gap: clamp(1rem, 3.5vmin, 2.4rem);
+      max-width: 34rem;
+    }
+    .maker {
+      margin-top: 0.9rem;
+    }
+  }
+
+  /* ---- Empty / error state ---------------------------------------------- */
+  /* An overlay (out of the grid flow) so it never consumes the spotlight row.
+     Hidden unless the stage is in the error state — the seeded first product and
+     bundled fallback mean the board normally has content from the first paint. */
+  .status {
+    position: absolute;
+    inset: 0;
+    display: none;
+    place-items: center;
+    padding: 2rem;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    letter-spacing: 0.06em;
+    color: var(--color-ink-dim);
+  }
+  .stage[data-state='error'] .status {
+    display: grid;
+  }
+  .stage[data-state='error'] .spotlight,
+  .stage[data-state='error'] .progress {
+    visibility: hidden;
+  }
+}
+
+@layer base {
+  @media (prefers-reduced-motion: no-preference) {
+    /* The one orchestrated moment: on each advance the launch card rises into
+       place and the detail settles in behind it. Retriggered from JS by toggling
+       `is-in` (see main.ts). */
+    .spotlight.is-in .logo {
+      animation: launch-rise 620ms cubic-bezier(0.2, 0.75, 0.2, 1) both;
+    }
+    .spotlight.is-in .detail {
+      animation: launch-settle 620ms cubic-bezier(0.2, 0.75, 0.2, 1) both;
+    }
+    .spotlight.is-in .scan {
+      animation: launch-settle 620ms cubic-bezier(0.2, 0.75, 0.2, 1) 80ms both;
+    }
+
+    /* Time-to-next: the rail fills over one rotation. Duration is set from JS via
+       --rotate-ms; retriggered by toggling `is-in`. */
+    .rail.is-in .rail__fill {
+      animation: rail-fill var(--rotate-ms, 7000ms) linear both;
+    }
+  }
+
+  @keyframes launch-rise {
+    from {
+      opacity: 0;
+      transform: translateY(1.1rem) scale(0.94);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes launch-settle {
+    from {
+      opacity: 0;
+      transform: translateY(0.5rem);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes rail-fill {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  /* Reduced motion: no rise, no fill — content simply swaps, fully formed. */
+  @media (prefers-reduced-motion: reduce) {
+    .rail {
+      display: none;
+    }
+  }
+}

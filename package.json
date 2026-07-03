@@ -1,0 +1,31 @@
+{
+  "name": "screenly-product-hunt-app",
+  "private": true,
+  "version": "0.0.1",
+  "scripts": {
+    "test": "bun test",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome lint --error-on-warnings .",
+    "lint:fix": "biome lint --write .",
+    "format": "biome format --write .",
+    "sync-fonts": "bun run sync-fonts.js",
+    "sync-data": "bun run build.js --data-only",
+    "build": "bun run build.js",
+    "dev": "bun run build.js && bunx serve dist"
+  },
+  "license": "AGPL-3.0-only",
+  "dependencies": {
+    "@fontsource-variable/bricolage-grotesque": "^5.2.10",
+    "@fontsource-variable/hanken-grotesk": "^5.2.8",
+    "@fontsource/space-mono": "^5.2.9",
+    "qrcode-generator": "^2.0.4"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.1",
+    "@tailwindcss/cli": "^4.1.0",
+    "@types/bun": "^1.2.0",
+    "@types/qrcode-generator": "^1.0.6",
+    "tailwindcss": "^4.1.0",
+    "typescript": "^5.7.0"
+  }
+}

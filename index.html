@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Featured on Product Hunt</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="A full-screen digital-signage board that rotates through the products featured on Product Hunt today — one at a time, with a QR to open each."
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23da552f'/%3E%3Cpath d='M16 8 L25 24 L7 24 Z' fill='white'/%3E%3C/svg%3E"
+    />
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NBZL4F2J0"></script>
+    <script>
+      window.dataLayer = window.dataLayer || []
+      function gtag() {
+        dataLayer.push(arguments)
+      }
+      gtag('js', new Date())
+      gtag('config', 'G-2NBZL4F2J0')
+    </script>
+    <link
+      rel="preload"
+      href="/static/fonts/bricolage-grotesque-latin-standard-normal.woff2?v=__ASSET_VERSION__"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/static/fonts/hanken-grotesk-latin-wght-normal.woff2?v=__ASSET_VERSION__"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link rel="stylesheet" href="/static/styles/main.css?v=__ASSET_VERSION__" />
+    <script src="/static/js/main.js?v=__ASSET_VERSION__" defer></script>
+  </head>
+  <body>
+    <!-- The stage is seeded at build time with the first featured product so the
+         screen is never blank pre-JS; main.ts then takes over the rotation and
+         draws the QR codes (which need JS). -->
+    <main class="stage" data-state="loading">
+      <header class="masthead">
+        <p class="kicker">
+          <span class="kicker__mark" aria-hidden="true">▲</span>Featured on Product Hunt
+        </p>
+        <p class="today" id="today">__TODAY__</p>
+      </header>
+
+      <div class="progress">
+        <div class="ticks" id="ticks" aria-hidden="true">__TICKS__</div>
+        <div class="rail" id="rail" aria-hidden="true"><span class="rail__fill"></span></div>
+      </div>
+
+      <section class="spotlight" id="spotlight" aria-live="polite">
+        <div class="logo" id="logo" style="--tile: __FIRST_TILE__" aria-hidden="true">
+          __FIRST_INITIAL__
+        </div>
+        <div class="detail">
+          <h1 class="name" id="name">__FIRST_NAME__</h1>
+          <p class="tagline" id="tagline">__FIRST_TAGLINE__</p>
+          <p class="maker" id="maker">__FIRST_MAKER__</p>
+        </div>
+        <figure class="scan" id="scan">
+          <div class="scan__qr" id="qr"></div>
+          <figcaption class="scan__cap">Scan to open</figcaption>
+        </figure>
+      </section>
+
+      <p class="status" id="status" role="status">Loading today’s launches…</p>
+
+      <footer class="colophon">
+        <p class="colophon__credit">
+          Today’s featured launches from
+          <a href="https://www.producthunt.com" target="_blank" rel="noopener noreferrer"
+            >producthunt.com</a
+          >
+        </p>
+        <a
+          class="brand"
+          href="https://www.screenly.io"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Screenly — opens in a new tab"
+        >
+          <img src="/static/images/screenly-logo.svg?v=__ASSET_VERSION__" alt="Screenly" />
+        </a>
+      </footer>
+    </main>
+  </body>
+</html>
