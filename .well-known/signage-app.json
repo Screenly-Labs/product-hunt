@@ -9,6 +9,12 @@
   "homepage": "https://product-hunt.srly.io/",
   "source": "https://github.com/Screenly-Labs/product-hunt",
   "support": "https://github.com/Screenly-Labs/product-hunt/issues",
+  "playback": {
+    "pacing": "stepped",
+    "loops": true,
+    "stepSeconds": 7,
+    "refreshIntervalS": 1800
+  },
   "launch": {
     "baseUrl": "https://product-hunt.srly.io/"
   }

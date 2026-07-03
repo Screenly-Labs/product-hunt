@@ -89,8 +89,11 @@ absolutely as `/static/...`.
   sha256 `?v=` cache-bust, write `CNAME`. `--data-only` refreshes the committed
   fallback and stops (used by `sync-data`). Does **not** mutate sources.
 - `.well-known/signage-app.json` — the [signage-app manifest](https://github.com/Screenly-Labs/app-store/blob/master/docs/app-manifest.md).
-  Takes no settings and runs its own internal rotation from a single URL, so it
-  omits `settings` and a launch `template`; `test/manifest.test.ts` guards it.
+  Takes no settings (so no `settings` block and no launch `template`), but it
+  paces itself, so it declares `playback` as **stepped + looping** with
+  `stepSeconds` = `ROTATE_MS` and `refreshIntervalS` = `REFRESH_MS` from
+  `main.ts`. Keep those in sync. `test/manifest.test.ts` guards the shape against
+  the app-store schema's invariants.
 
 ## Design — "The Launch"
 
