@@ -1,0 +1,15 @@
+{
+  "manifestVersion": "1",
+  "id": "product-hunt",
+  "name": "Featured on Product Hunt",
+  "description": "A full-screen digital-signage board that rotates through the products featured on Product Hunt today — one at a time, each with its tagline, maker and a QR code to open it. Data comes from Product Hunt's public feed; it is a live selection, not a vote-ranked leaderboard.",
+  "summary": "Today's featured products on Product Hunt.",
+  "vendor": "Screenly",
+  "tags": ["Technology", "Business"],
+  "homepage": "https://product-hunt.srly.io/",
+  "source": "https://github.com/Screenly-Labs/product-hunt",
+  "support": "https://github.com/Screenly-Labs/product-hunt/issues",
+  "launch": {
+    "baseUrl": "https://product-hunt.srly.io/"
+  }
+}

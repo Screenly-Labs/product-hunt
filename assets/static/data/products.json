@@ -1,0 +1,85 @@
+{
+  "generatedAt": "2026-07-03T18:00:00.000Z",
+  "products": [
+    {
+      "id": "1186717",
+      "name": "Vox",
+      "tagline": "Talk to GitHub Copilot out loud",
+      "maker": "Ashish Kumar",
+      "url": "https://www.producthunt.com/products/vox-5",
+      "publishedAt": 1783037331000
+    },
+    {
+      "id": "1186689",
+      "name": "Osloq",
+      "tagline": "An AI agent that reproduces GitHub issues for you",
+      "maker": "Enes",
+      "url": "https://www.producthunt.com/products/osloq",
+      "publishedAt": 1783031838000
+    },
+    {
+      "id": "1186480",
+      "name": "Glaze by Raycast",
+      "tagline": "Create your own Mac apps by chatting with AI",
+      "maker": "Chris Messina",
+      "url": "https://www.producthunt.com/products/glaze-4",
+      "publishedAt": 1783007822000
+    },
+    {
+      "id": "1186410",
+      "name": "Tamamon",
+      "tagline": "A desktop pet that grows as you code with Claude Code",
+      "maker": "Jason Jeong",
+      "url": "https://www.producthunt.com/products/tamamon-a-tiny-desktop-pet-that-grows",
+      "publishedAt": 1783000626000
+    },
+    {
+      "id": "1186250",
+      "name": "Goals from Loops",
+      "tagline": "Measure whether a campaign drove the desired outcome",
+      "maker": "Garry Tan",
+      "url": "https://www.producthunt.com/products/loops",
+      "publishedAt": 1782986596000
+    },
+    {
+      "id": "1186036",
+      "name": "Sidedoor",
+      "tagline": "Paste any job, find who in your network can refer you",
+      "maker": "Jerry Feng",
+      "url": "https://www.producthunt.com/products/sidedoor-2",
+      "publishedAt": 1782968973000
+    },
+    {
+      "id": "1186027",
+      "name": "Gaming Chat SDK by CometChat",
+      "tagline": "Chat drops into Unreal like it was always there",
+      "maker": "Pourav Raj",
+      "url": "https://www.producthunt.com/products/cometchat",
+      "publishedAt": 1782968578000
+    },
+    {
+      "id": "1186004",
+      "name": "Basedash Actions",
+      "tagline": "A BI tool that can take action for you",
+      "maker": "Max Musing",
+      "url": "https://www.producthunt.com/products/basedash",
+      "publishedAt": 1782965693000
+    },
+    {
+      "id": "1185939",
+      "name": "Banger Mail",
+      "tagline": "Shared mailboxes for teams and AI agents",
+      "maker": "Tiago Loureiro",
+      "url": "https://www.producthunt.com/products/banger-mail",
+      "publishedAt": 1782954026000
+    },
+    {
+      "id": "1185930",
+      "name": "scritty",
+      "tagline": "Shared, searchable memory for every AI coding agent",
+      "maker": "scritty",
+      "url": "https://www.producthunt.com/products/scritty",
+      "publishedAt": 1782951704000
+    }
+  ]
+}
