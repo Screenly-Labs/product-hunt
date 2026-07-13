@@ -10,11 +10,22 @@
    ========================================================================= */
 
 @import 'tailwindcss';
-/* Shared base (the degraded-mode kill-switch) from @screenly-labs/signage-kit.
-   The app's own @theme + component styles below layer on top; the design
-   identity stays here, per-app. */
-@import '@screenly-labs/signage-kit/styles/preset.css';
+/* Shared base (brand/font tokens + fluid root + the degraded-mode kill-switch),
+   the canonical @font-face set, and the standardized footer badge — all from
+   @screenly-labs/signage-kit. The app's own @theme + component styles below
+   layer on top; the design identity stays here, per-app.
 
+   NOTE: the .stage frame is NOT imported — this app's .stage is a bespoke named
+   grid with an orange launch-morning glow (see components below), not the
+   canonical place-items:center frame. */
+@import '@screenly-labs/signage-kit/styles/preset.css';
+@import '@screenly-labs/signage-kit/styles/fonts.css';
+@import '@screenly-labs/signage-kit/styles/brand.css';
+
+/* Design tokens — also generate utilities (bg-ground, text-orange…). The mono
+   family (--font-mono: Space Mono) matches the kit preset; --font-display
+   (Bricolage) and --font-body (Hanken, the app's own token name) are kept
+   because the components reference them directly. */
 @theme {
   --color-ground: #17120f;
   --color-ground-2: #221913;
@@ -28,43 +39,15 @@
   --font-mono: 'Space Mono', ui-monospace, 'SFMono-Regular', monospace;
 }
 
-/* Webfonts: self-hosted, vendored from Bun-managed @fontsource (sync-fonts.js).
-   Bricolage/Hanken are variable "standard"/"wght" axes; Space Mono is static. */
-@font-face {
-  font-family: 'Bricolage Grotesque';
-  font-style: normal;
-  font-weight: 200 800;
-  font-display: swap;
-  src: url('/static/fonts/bricolage-grotesque-latin-standard-normal.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'Hanken Grotesk';
-  font-style: normal;
-  font-weight: 100 900;
-  font-display: swap;
-  src: url('/static/fonts/hanken-grotesk-latin-wght-normal.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'Space Mono';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('/static/fonts/space-mono-latin-400-normal.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'Space Mono';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url('/static/fonts/space-mono-latin-700-normal.woff2') format('woff2');
-}
-
 @layer base {
-  /* One fluid root drives the whole scale; vw+vh keeps it orientation-neutral so
-     portrait and landscape resolve to a similar type size. Children size in rem,
-     so the layout scales from 800×480 → 4K with no breakpoints. */
+  /* Tune the kit's fluid root (clamp of vw+vh) for this design; the clamp itself
+     lives in the preset. vw+vh keeps it orientation-neutral so portrait and
+     landscape resolve to a similar type size. Children size in rem, so the
+     layout scales from 800×480 → 4K with no breakpoints. */
   :root {
-    font-size: clamp(15px, 0.86vw + 0.86vh, 44px);
+    --root-min: 15px;
+    --root-gain: 0.86;
+    --root-max: 44px;
   }
 
   body {
@@ -310,23 +293,9 @@
     text-decoration: none;
   }
 
-  .brand {
-    display: block;
-    flex: none;
-    opacity: 0.6;
-    transition: opacity 200ms ease;
-    border-radius: 4px;
-    outline-offset: 6px;
-  }
-  .brand:hover,
-  .brand:focus-visible {
-    opacity: 0.95;
-  }
-  .brand img {
-    display: block;
-    width: auto;
-    height: clamp(12px, 1.15rem, 24px);
-  }
+  /* The Screenly footer badge (.brand) is the standardized fixed corner lockup
+     from the kit's brand.css — imported above, removed on players by
+     removeScreenlyBranding(). */
 
   /* ---- Orientation & small screens -------------------------------------- */
   /* Portrait (and narrow landscape): stack the card over the detail and drop the
