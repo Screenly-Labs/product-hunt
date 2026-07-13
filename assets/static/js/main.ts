@@ -13,6 +13,7 @@
 // Side-effect import: installs the replaceChildren shim for the older-browser
 // degraded mode. Must stay first so the shim is in place before any render.
 import '@screenly-labs/signage-kit/polyfills'
+import { removeScreenlyBranding } from '@screenly-labs/signage-kit/branding'
 import qrcode from 'qrcode-generator'
 import { type Product, initial, isProduct, tileColor } from './products'
 // Inlined into the bundle at build time, so the offline fallback needs no fetch.
@@ -159,6 +160,9 @@ const fetchData = async (): Promise<void> => {
 }
 
 const init = (): void => {
+  // On a Screenly player the viewer is already a Screenly customer, so drop the
+  // promotional footer badge (no-op in every other browser).
+  removeScreenlyBranding()
   // Drive the rail-fill duration from the rotation interval so the two stay in
   // sync if ROTATE_MS changes (the CSS only has a static fallback).
   el('rail')?.style.setProperty('--rotate-ms', `${ROTATE_MS}ms`)
