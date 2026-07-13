@@ -10,6 +10,10 @@
    ========================================================================= */
 
 @import 'tailwindcss';
+/* Shared base (the degraded-mode kill-switch) from @screenly-labs/signage-kit.
+   The app's own @theme + component styles below layer on top; the design
+   identity stays here, per-app. */
+@import '@screenly-labs/signage-kit/styles/preset.css';
 
 @theme {
   --color-ground: #17120f;
@@ -427,19 +431,14 @@
 }
 
 /* =========================================================================
-   Degraded mode — old/weak signage players (html.legacy set by the inline gate
-   in index.html). Assume the device can't afford animation; drop it entirely.
-   The launch-rise/settle entrances resolve to their visible end-state when
-   killed; the rotation still runs via JS. The rail is a pure progress-fill
-   animation with nothing to show when static, so hide it (mirrors reduced-motion).
+   Degraded mode — old/weak signage players (html.legacy set by the shared gate).
+   The generic kill-switch (drop all animation/transition) comes from the kit's
+   preset, imported above. The launch-rise/settle entrances resolve to their
+   visible end-state when killed; the rotation still runs via JS.
    ========================================================================= */
+
+/* App-specific resting state: the rail is a pure progress-fill animation with
+   nothing to show when static, so hide it (mirrors reduced-motion). */
 html.legacy .rail {
   display: none;
-}
-html.legacy *,
-html.legacy *::before,
-html.legacy *::after {
-  animation: none !important;
-  transition: none !important;
-  will-change: auto !important;
 }
