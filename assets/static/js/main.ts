@@ -12,7 +12,7 @@
 
 // Side-effect import: installs the replaceChildren shim for the older-browser
 // degraded mode. Must stay first so the shim is in place before any render.
-import './polyfills'
+import '@screenly-labs/signage-kit/polyfills'
 import qrcode from 'qrcode-generator'
 import { type Product, initial, isProduct, tileColor } from './products'
 // Inlined into the bundle at build time, so the offline fallback needs no fetch.
