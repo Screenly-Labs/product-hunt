@@ -17,11 +17,23 @@
 //   5. write products.json, stamp asset ?v= hash, write CNAME
 
 import { rm, mkdir, cp, readdir, readFile, writeFile } from 'node:fs/promises'
+import cascadeLayers from '@csstools/postcss-cascade-layers'
+import browserslist from 'browserslist'
+import { build as esbuild } from 'esbuild'
+import { browserslistToTargets, transform as lightningcss } from 'lightningcss'
+import postcss from 'postcss'
 import { run as syncFonts } from './sync-fonts.js'
 import { initial, parseFeed, tileColor } from './assets/static/js/products.ts'
 
 const DIST = 'dist'
 const DOMAIN = 'product-hunt.srly.io'
+
+// The `browserslist` field in package.json is the CSS support floor: Lightning
+// CSS down-levels the stylesheet to it. The JS is lowered separately by esbuild to
+// a fixed ES2017 syntax floor (kept at/below the browserslist minimum); esbuild
+// can't read browserslist, so keep the two in sync if you change the floor. See
+// the degraded-mode notes in index.html / tailwind.css.
+const cssTargets = browserslistToTargets(browserslist())
 const FEED_URL = 'https://www.producthunt.com/feed?category=undefined'
 const COMMITTED_DATA = 'assets/static/data/products.json'
 const MAX_PRODUCTS = 10
@@ -78,20 +90,27 @@ await cp('assets/static/images', `${DIST}/static/images`, { recursive: true })
 await cp('index.html', `${DIST}/index.html`)
 await cp('.well-known', `${DIST}/.well-known`, { recursive: true })
 
+// Create the output subdirs up front so Tailwind/esbuild never race an absent dir.
+await mkdir(`${DIST}/static/styles`, { recursive: true })
+await mkdir(`${DIST}/static/js`, { recursive: true })
+
 // Serve the freshly-resolved data (may be newer than the committed copy).
 await mkdir(`${DIST}/static/data`, { recursive: true })
 await writeFile(`${DIST}/static/data/products.json`, `${JSON.stringify(data)}\n`)
 console.log(`✓ Data: ${DIST}/static/data/products.json`)
 
-// Tailwind: compile + minify the source CSS to the served stylesheet.
+// Tailwind: compile (unminified), then down-level + minify for the browserslist
+// floor. cascade-layers flattens @layer into :not(#\#) specificity so the cascade
+// survives on engines that drop @layer contents; Lightning CSS then lowers
+// color-mix()/nesting, adds prefixes, and minifies.
+const cssOut = `${DIST}/static/styles/main.css`
 const tailwind = Bun.spawn(
   [
     'node_modules/.bin/tailwindcss',
     '--input',
     'assets/static/styles/tailwind.css',
     '--output',
-    `${DIST}/static/styles/main.css`,
-    '--minify'
+    cssOut
   ],
   { stdout: 'inherit', stderr: 'inherit' }
 )
@@ -99,23 +118,44 @@ if ((await tailwind.exited) !== 0) {
   console.error('✗ Tailwind build failed')
   process.exit(1)
 }
-console.log(`✓ CSS: ${DIST}/static/styles/main.css`)
-
-// TypeScript → browser JS. main.ts inlines ./products, the fallback JSON, and
-// qrcode-generator, so the output is one self-contained classic script.
-const js = await Bun.build({
-  entrypoints: ['assets/static/js/main.ts'],
-  minify: true,
-  target: 'browser',
-  external: []
-})
-if (!js.success) {
-  console.error('✗ JS build failed')
-  for (const message of js.logs) console.error(message)
+try {
+  const flattened = await postcss([cascadeLayers()]).process(await readFile(cssOut, 'utf8'), {
+    from: cssOut
+  })
+  const { code: cssCode } = lightningcss({
+    filename: cssOut,
+    code: Buffer.from(flattened.css),
+    minify: true,
+    targets: cssTargets
+  })
+  await writeFile(cssOut, cssCode)
+} catch (err) {
+  console.error(`✗ CSS build failed (${cssOut})`)
+  console.error(err)
   process.exit(1)
 }
-await Bun.write(`${DIST}/static/js/main.js`, await js.outputs[0].text())
-console.log(`✓ JS: ${DIST}/static/js/main.js`)
+console.log(`✓ CSS: ${cssOut} (Tailwind → cascade-layers flatten → Lightning CSS)`)
+
+// TypeScript → browser JS with esbuild. Bundles main.ts (inlining ./products,
+// the fallback JSON, qrcode-generator, and the polyfills shim), lowers modern
+// syntax (?., ??, spread) to the ES2017 floor so old engines can parse it, and
+// emits an IIFE so the output stays a self-contained self-executing classic
+// script loadable from a plain <script>.
+try {
+  await esbuild({
+    entryPoints: ['assets/static/js/main.ts'],
+    bundle: true,
+    minify: true,
+    format: 'iife',
+    target: ['es2017'],
+    outfile: `${DIST}/static/js/main.js`
+  })
+} catch (err) {
+  console.error('✗ JS build failed')
+  console.error(err)
+  process.exit(1)
+}
+console.log(`✓ JS: ${DIST}/static/js/main.js (esbuild, iife, es2017)`)
 
 // 4. Seed index.html with the first product + one rotation tick per product, so
 // the screen shows real content before main.js runs.
