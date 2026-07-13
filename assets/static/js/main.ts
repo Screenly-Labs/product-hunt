@@ -10,6 +10,9 @@
 // into this script so the board is never blank. This is a rotation, not a
 // ranking — the feed has no votes (see CLAUDE.md).
 
+// Side-effect import: installs the replaceChildren shim for the older-browser
+// degraded mode. Must stay first so the shim is in place before any render.
+import './polyfills'
 import qrcode from 'qrcode-generator'
 import { type Product, initial, isProduct, tileColor } from './products'
 // Inlined into the bundle at build time, so the offline fallback needs no fetch.

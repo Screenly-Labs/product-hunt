@@ -64,6 +64,7 @@
   }
 
   body {
+    min-height: 100vh; /* fallback for engines below the svh floor (~2018 players) */
     min-height: 100svh;
     background-color: var(--color-ground);
     color: var(--color-ink);
@@ -86,6 +87,7 @@
        flexible row. */
     grid-template-rows: auto auto 1fr auto;
     gap: clamp(0.8rem, 2.4vmin, 2rem);
+    min-height: 100vh; /* fallback for engines below the svh floor (~2018 players) */
     min-height: 100svh;
     padding: clamp(1.3rem, 4.2vmin, 3.4rem);
     overflow: hidden;
@@ -422,4 +424,22 @@
       display: none;
     }
   }
+}
+
+/* =========================================================================
+   Degraded mode — old/weak signage players (html.legacy set by the inline gate
+   in index.html). Assume the device can't afford animation; drop it entirely.
+   The launch-rise/settle entrances resolve to their visible end-state when
+   killed; the rotation still runs via JS. The rail is a pure progress-fill
+   animation with nothing to show when static, so hide it (mirrors reduced-motion).
+   ========================================================================= */
+html.legacy .rail {
+  display: none;
+}
+html.legacy *,
+html.legacy *::before,
+html.legacy *::after {
+  animation: none !important;
+  transition: none !important;
+  will-change: auto !important;
 }

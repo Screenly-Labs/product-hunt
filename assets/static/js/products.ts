@@ -105,10 +105,24 @@ export const hashString = (input: string): number => {
 export const tileColor = (name: string): string =>
   TILE_COLORS[hashString(name) % TILE_COLORS.length]
 
+// First-letter matcher for the monogram. \p{} Unicode property escapes need a
+// modern engine (Chrome 64+, Safari 11.1+, Firefox 78+). A regex *literal* with
+// \p{} is a parse-time error on older engines, which would kill the whole bundle
+// in degraded mode, so build it via new RegExp (a catchable runtime error) and
+// fall back to ASCII letters/digits where \p{} is unsupported.
+const MONOGRAM_CHAR = (() => {
+  try {
+    // biome-ignore lint/complexity/useRegexLiterals: a /\p{}/u literal is a parse-time error on engines without Unicode property escapes (e.g. Firefox <78); new RegExp keeps that error catchable so the bundle still loads
+    return new RegExp('[\\p{L}\\p{N}]', 'u')
+  } catch {
+    return /[A-Za-z0-9]/
+  }
+})()
+
 // First letter/digit of the name for the monogram, uppercased. Skips leading
 // emoji/punctuation (some launches lead with an emoji); falls back to '#'.
 export const initial = (name: string): string => {
-  const match = name.match(/[\p{L}\p{N}]/u)
+  const match = name.match(MONOGRAM_CHAR)
   return match ? match[0].toUpperCase() : '#'
 }
 
