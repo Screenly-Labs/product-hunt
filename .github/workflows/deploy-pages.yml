@@ -3,7 +3,8 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [master]
+    tags:
+      - '[0-9][0-9][0-9][0-9].*'
   # The build re-fetches the Product Hunt feed each run, so a scheduled deploy is
   # how the featured set stays current — Product Hunt's day rolls over at 00:01
   # Pacific, and the set shifts through the day as products are featured.
