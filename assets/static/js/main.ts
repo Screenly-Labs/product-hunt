@@ -168,7 +168,7 @@ const init = (): void => {
   // Report which player is showing this. A static app can only profile from the
   // user agent and referrer; the Worker apps additionally read X-Requested-With,
   // the only signal that names an Android WebView vendor.
-  trackPlayer(detectPlayer(), { app: 'product-hunt' })
+  trackPlayer(detectPlayer(), { app: 'product-hunt', sendPageView: true })
   // Drive the rail-fill duration from the rotation interval so the two stay in
   // sync if ROTATE_MS changes (the CSS only has a static fallback).
   el('rail')?.style.setProperty('--rotate-ms', `${ROTATE_MS}ms`)
